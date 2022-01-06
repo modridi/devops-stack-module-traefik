@@ -27,6 +27,19 @@ resource "argocd_project" "this" {
   }
 }
 
+data "utils_deep_merge_yaml" "values" {
+  input = [
+    templatefile("${path.module}/profiles/default.yaml", {
+      cluster_name = var.cluster_name,
+      base_domain  = var.base_domain,
+    }),
+    templatefile("${path.module}/profiles/${var.profile}.yaml", {
+      cluster_name = var.cluster_name,
+      base_domain  = var.base_domain,
+    })
+  ]
+}
+
 resource "argocd_application" "this" {
   metadata {
     name      = "traefik"
@@ -41,7 +54,7 @@ resource "argocd_application" "this" {
       path            = "charts/traefik"
       target_revision = "main"
       helm {
-        values = local.values_yaml
+        values = data.utils_deep_merge_yaml.values.output
       }
     }
 

@@ -36,11 +36,6 @@ variable "profile" {
   default = "default"
 }
 
-variable "values_overrides" {
-  type    = map(any)
-  default = {}
-}
-
 #######################
 ## Module variables
 #######################
