@@ -41,10 +41,7 @@ resource "argocd_application" "this" {
       path            = "charts/traefik"
       target_revision = "main"
       helm {
-        values = templatefile("${path.module}/values.tmpl.yaml", {
-          cluster_name   = var.cluster_name,
-          base_domain    = var.base_domain,
-        })
+        values = local.values_yaml
       }
     }
 

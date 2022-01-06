@@ -31,6 +31,16 @@ variable "namespace" {
   default = "traefik"
 }
 
+variable "profile" {
+  type    = string
+  default = "default"
+}
+
+variable "values_overrides" {
+  type    = map(any)
+  default = {}
+}
+
 #######################
 ## Module variables
 #######################
