@@ -28,16 +28,10 @@ resource "argocd_project" "this" {
 }
 
 data "utils_deep_merge_yaml" "values" {
-  input = [
-    templatefile("${path.module}/profiles/default.yaml", {
+  input = [ for i in var.profiles : templatefile("${path.module}/profiles/${i}.yaml", {
       cluster_name = var.cluster_name,
       base_domain  = var.base_domain,
-    }),
-    templatefile("${path.module}/profiles/${var.profile}.yaml", {
-      cluster_name = var.cluster_name,
-      base_domain  = var.base_domain,
-    })
-  ]
+  }) ]
 }
 
 resource "argocd_application" "this" {
