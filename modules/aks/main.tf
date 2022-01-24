@@ -1,3 +1,20 @@
+data "azurerm_dns_zone" "this" {
+  name                = var.base_domain
+  resource_group_name = var.resource_group_name
+}
+
+data "azurerm_resource_group" "this" {
+  name = var.resource_group_name
+}
+
+resource "azurerm_dns_cname_record" "wildcard" {
+  name                = "*.apps.${var.cluster_name}"
+  zone_name           = data.azurerm_dns_zone.this.name
+  resource_group_name = data.azurerm_dns_zone.this.resource_group_name
+  ttl                 = 300
+  record              = "${local.azure_dns_label_name}.${data.azurerm_resource_group.this.location}.cloudapp.azure.com."
+}
+
 module "traefik" {
   source = "../"
 
@@ -9,6 +26,6 @@ module "traefik" {
   profiles       = var.profiles
 
   extra_yaml = [ templatefile("${path.module}/values.yaml", {
-    azure_dns_label_name = var.azure_dns_label_name
+    azure_dns_label_name = local.azure_dns_label_name
   }) ]
 }
