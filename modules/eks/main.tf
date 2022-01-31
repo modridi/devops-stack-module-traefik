@@ -6,8 +6,6 @@ module "traefik" {
   argocd_namespace = var.argocd_namespace
 
   namespace      = var.namespace
-  profiles       = var.profiles
 
-  extra_yaml = [ templatefile("${path.module}/values.yaml", {
-  }) ]
+  extra_yaml = concat([templatefile("${path.module}/values.yaml", {})], var.extra_yaml)
 }
