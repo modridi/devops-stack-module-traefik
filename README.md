@@ -23,8 +23,20 @@ module "ingress" {
 
 ### EKS
 
-- Description: Configure Traefik to be set behind an AWS NLB.
+- Description: Configure Traefik for EKS using a NodePort setup.
 - Source: `git::https://github.com/camptocamp/devops-stack-module-traefik.git//modules/eks`
+
+
+### SKS
+
+- Description: Configure Traefik for SKS using a NodePort setup.
+- Source: `git::https://github.com/camptocamp/devops-stack-module-traefik.git//modules/sks`
+
+
+### NodePort
+
+- Description: Configure Traefik to be set behind an L4 static load balancer.
+- Source: `git::https://github.com/camptocamp/devops-stack-module-traefik.git//modules/nodeport`
 
 
 ### AKS

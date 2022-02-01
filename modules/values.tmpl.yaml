@@ -1,3 +1,4 @@
+---
 traefik:
   middlewares:
     # NOTE: middleware name
