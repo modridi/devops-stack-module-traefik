@@ -1,7 +1,6 @@
 locals {
   default_yaml = [ templatefile("${path.module}/values.tmpl.yaml", {
-      cluster_name = var.cluster_name,
-      base_domain  = var.base_domain,
+    cluster_info = var.cluster_info,
   }) ]
   all_yaml = concat(local.default_yaml, var.extra_yaml)
 }
