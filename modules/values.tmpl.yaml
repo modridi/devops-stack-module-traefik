@@ -8,5 +8,5 @@ traefik:
     redirections:
       withclustername:
         permanent: false
-        regex: apps.${cluster_info.base_domain}
-        replacement: apps.${cluster_info.cluster_name}.${cluster_info.base_domain}
+        regex: apps.${base_domain}
+        replacement: apps.${cluster_name}.${base_domain}

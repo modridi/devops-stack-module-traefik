@@ -1,8 +1,11 @@
 module "traefik" {
   source = "../nodeport/"
 
-  cluster_info = var.cluster_info
-  namespace    = var.namespace
+  cluster_name     = var.cluster_name
+  base_domain      = var.base_domain
+  argocd_namespace = var.argocd_namespace
+
+  namespace      = var.namespace
 
   extra_yaml = concat([templatefile("${path.module}/values.tmpl.yaml", {})], var.extra_yaml)
 }

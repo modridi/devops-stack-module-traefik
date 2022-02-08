@@ -1,5 +1,5 @@
 data "azurerm_dns_zone" "this" {
-  name                = var.cluster_info.base_domain
+  name                = var.base_domain
   resource_group_name = var.resource_group_name
 }
 
@@ -8,7 +8,7 @@ data "azurerm_resource_group" "this" {
 }
 
 resource "azurerm_dns_cname_record" "wildcard" {
-  name                = "*.apps.${var.cluster_info.cluster_name}"
+  name                = "*.apps.${var.cluster_name}"
   zone_name           = data.azurerm_dns_zone.this.name
   resource_group_name = data.azurerm_dns_zone.this.resource_group_name
   ttl                 = 300
@@ -18,9 +18,9 @@ resource "azurerm_dns_cname_record" "wildcard" {
 module "traefik" {
   source = "../"
 
-  cluster_name     = var.cluster_info.cluster_name
-  base_domain      = var.cluster_info.base_domain
-  argocd_namespace = var.cluster_info.argocd_namespace
+  cluster_name     = var.cluster_name
+  base_domain      = var.base_domain
+  argocd_namespace = var.argocd_namespace
 
   namespace      = var.namespace
 

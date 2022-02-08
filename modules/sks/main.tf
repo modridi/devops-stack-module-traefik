@@ -1,6 +1,6 @@
 resource "exoscale_nlb" "this" {
   zone = var.zone
-  name = format("ingresses-%s", var.cluster_info.cluster_name)
+  name = format("ingresses-%s", var.cluster_name)
 }
 
 resource "exoscale_nlb_service" "http" {
@@ -71,7 +71,10 @@ resource "exoscale_security_group_rule" "all" {
 module "traefik" {
   source = "../nodeport/"
 
-  cluster_info = local.cluster_info
+  cluster_name     = var.cluster_name
+  base_domain      = var.base_domain
+  argocd_namespace = var.argocd_namespace
+
   namespace    = var.namespace
 
   extra_yaml = concat([templatefile("${path.module}/values.tmpl.yaml", {})], var.extra_yaml)

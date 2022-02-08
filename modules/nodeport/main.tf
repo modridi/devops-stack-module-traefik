@@ -1,7 +1,9 @@
 module "traefik" {
   source = "../"
 
-  cluster_info = var.cluster_info
+  cluster_name     = var.cluster_name
+  base_domain      = var.base_domain
+  argocd_namespace = var.argocd_namespace
 
   namespace      = var.namespace
 
