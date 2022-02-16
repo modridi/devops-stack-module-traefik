@@ -5,7 +5,7 @@ module "traefik" {
   base_domain      = var.base_domain
   argocd_namespace = var.argocd_namespace
 
-  namespace    = var.namespace
+  namespace = var.namespace
 
   extra_yaml = concat([templatefile("${path.module}/values.tmpl.yaml", {})], var.extra_yaml)
 }

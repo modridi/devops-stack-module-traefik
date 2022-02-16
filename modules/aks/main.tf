@@ -22,7 +22,7 @@ module "traefik" {
   base_domain      = var.base_domain
   argocd_namespace = var.argocd_namespace
 
-  namespace      = var.namespace
+  namespace = var.namespace
 
   extra_yaml = concat([templatefile("${path.module}/values.tmpl.yaml", {
     azure_dns_label_name = local.azure_dns_label_name

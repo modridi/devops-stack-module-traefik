@@ -6,16 +6,16 @@ resource "argocd_project" "this" {
       "devops-stack.io/argocd_namespace" = var.argocd_namespace
     }
   }
- 
+
   spec {
     description  = "Traefik application project"
     source_repos = ["https://github.com/camptocamp/devops-stack-module-traefik.git"]
- 
+
     destination {
       server    = "https://kubernetes.default.svc"
       namespace = var.namespace
     }
- 
+
     orphaned_resources {
       warn = true
     }
@@ -57,16 +57,16 @@ resource "argocd_application" "this" {
     sync_policy {
       automated = {
         allow_empty = false
-        prune     = true
-        self_heal = true
+        prune       = true
+        self_heal   = true
       }
 
       retry {
         backoff = {
-          duration = ""
+          duration     = ""
           max_duration = ""
         }
-        limit   = "0"
+        limit = "0"
       }
 
       sync_options = [
