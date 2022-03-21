@@ -10,18 +10,8 @@ variable "base_domain" {
   type = string
 }
 
-variable "oidc" {
-  type    = any
-  default = {}
-}
-
 variable "argocd_namespace" {
   type = string
-}
-
-variable "cluster_issuer" {
-  type    = string
-  default = "ca-issuer"
 }
 
 variable "namespace" {
@@ -29,9 +19,10 @@ variable "namespace" {
   default = "traefik"
 }
 
-variable "extra_yaml" {
-  type    = list(string)
-  default = []
+variable "helm_values" {
+  description = "Helm values, passed as a list of HCL structures."
+  type        = any
+  default     = []
 }
 
 #######################
