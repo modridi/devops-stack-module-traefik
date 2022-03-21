@@ -24,7 +24,5 @@ module "traefik" {
 
   namespace = var.namespace
 
-  extra_yaml = concat([templatefile("${path.module}/values.tmpl.yaml", {
-    azure_dns_label_name = local.azure_dns_label_name
-  })], var.extra_yaml)
+  helm_values = concat(local.helm_values, var.helm_values)
 }

@@ -7,5 +7,5 @@ module "traefik" {
 
   namespace = var.namespace
 
-  extra_yaml = concat([templatefile("${path.module}/values.tmpl.yaml", {})], var.extra_yaml)
+  helm_values = concat(local.helm_values, var.helm_values)
 }
