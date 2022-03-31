@@ -15,7 +15,7 @@ locals {
         redirections = {
           withclustername = {
             permanent = false
-            regex = var.base_domain
+            regex = "apps.${var.base_domain}"
             replacement = "apps.${var.cluster_name}.${var.base_domain}"
           }
         }
