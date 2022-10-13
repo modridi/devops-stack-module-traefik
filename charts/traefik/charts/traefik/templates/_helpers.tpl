@@ -32,6 +32,14 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 {{- end -}}
 
+{{/* Generate basic labels */}}
+{{- define "traefik.labels" -}}
+app.kubernetes.io/name: {{ template "traefik.name" . }}
+helm.sh/chart: {{ template "traefik.chart" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
 {{/*
 The name of the service account to use
 */}}
@@ -59,4 +67,15 @@ Construct a comma-separated list of whitelisted namespaces
 {{- end -}}
 {{- define "providers.kubernetesCRD.namespaces" -}}
 {{- default .Release.Namespace (join "," .Values.providers.kubernetesCRD.namespaces) }}
+{{- end -}}
+
+{{/*
+Renders a complete tree, even values that contains template.
+*/}}
+{{- define "traefik.render" -}}
+  {{- if typeIs "string" .value }}
+    {{- tpl .value .context }}
+  {{ else }}
+    {{- tpl (.value | toYaml) .context }}
+  {{- end }}
 {{- end -}}
