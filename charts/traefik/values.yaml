@@ -12,3 +12,5 @@ traefik:
   tlsOptions:
     default:
       minVersion: VersionTLS12
+  middlewares:
+    redirections: {}
