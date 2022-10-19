@@ -12,10 +12,7 @@
       {{- end }}
       {{- end }}
       labels:
-        app.kubernetes.io/name: {{ template "traefik.name" . }}
-        helm.sh/chart: {{ template "traefik.chart" . }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "traefik.labels" . | nindent 8 -}}
       {{- with .Values.deployment.podLabels }}
       {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -49,23 +46,27 @@
           httpGet:
             path: /ping
             port: {{ default .Values.ports.traefik.port .Values.ports.traefik.healthchecksPort }}
-          failureThreshold: 1
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 2
+            scheme: {{ default "HTTP" .Values.ports.traefik.healthchecksScheme }}
+          {{- toYaml .Values.readinessProbe | nindent 10 }}
         livenessProbe:
           httpGet:
             path: /ping
             port: {{ default .Values.ports.traefik.port .Values.ports.traefik.healthchecksPort }}
-          failureThreshold: 3
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 2
+            scheme: {{ default "HTTP" .Values.ports.traefik.healthchecksScheme }}
+          {{- toYaml .Values.livenessProbe | nindent 10 }}
+        lifecycle:
+          {{- with .Values.deployment.lifecycle }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
         ports:
+        {{ $hostNetwork := .Values.hostNetwork }}
         {{- range $name, $config := .Values.ports }}
         {{- if $config }}
+          {{- if and $hostNetwork (and $config.hostPort $config.port) }}
+            {{- if ne ($config.hostPort | int) ($config.port | int) }}
+              {{- fail "ERROR: All hostPort must match their respective containerPort when `hostNetwork` is enabled" }}
+            {{- end }}
+          {{- end }}
         - name: {{ $name | quote }}
           containerPort: {{ $config.port }}
           {{- if $config.hostPort }}
@@ -118,7 +119,9 @@
           {{- if .Values.metrics }}
           {{- if .Values.metrics.datadog }}
           - "--metrics.datadog=true"
+          {{- if .Values.metrics.datadog.address }}
           - "--metrics.datadog.address={{ .Values.metrics.datadog.address }}"
+          {{- end }}
           {{- end }}
           {{- if .Values.metrics.influxdb }}
           - "--metrics.influxdb=true"
@@ -128,6 +131,9 @@
           {{- if .Values.metrics.prometheus }}
           - "--metrics.prometheus=true"
           - "--metrics.prometheus.entrypoint={{ .Values.metrics.prometheus.entryPoint }}"
+          {{- if .Values.metrics.prometheus.addRoutersLabels }}
+          - "--metrics.prometheus.addRoutersLabels=true"
+          {{- end }}
           {{- end }}
           {{- if .Values.metrics.statsd }}
           - "--metrics.statsd=true"
@@ -137,6 +143,122 @@
           {{- if .Values.tracing }}
           {{- if .Values.tracing.instana }}
           - "--tracing.instana=true"
+          {{- if .Values.tracing.instana.localAgentHost }}
+          - "--tracing.instana.localAgentHost={{ .Values.tracing.instana.localAgentHost }}"
+          {{- end }}
+          {{- if .Values.tracing.instana.localAgentPort }}
+          - "--tracing.instana.localAgentPort={{ .Values.tracing.instana.localAgentPort }}"
+          {{- end }}
+          {{- if .Values.tracing.instana.logLevel }}
+          - "--tracing.instana.logLevel={{ .Values.tracing.instana.logLevel }}"
+          {{- end }}
+          {{- if .Values.tracing.instana.enableAutoProfile }}
+          - "--tracing.instana.enableAutoProfile={{ .Values.tracing.instana.enableAutoProfile }}"
+          {{- end }}
+          {{- end }}
+          {{- if .Values.tracing.datadog }}
+          - "--tracing.datadog=true"
+          {{- if .Values.tracing.datadog.localAgentHostPort }}
+          - "--tracing.datadog.localAgentHostPort={{ .Values.tracing.datadog.localAgentHostPort }}"
+          {{- end }}
+          {{- if .Values.tracing.datadog.debug }}
+          - "--tracing.datadog.debug=true"
+          {{- end }}
+          {{- if .Values.tracing.datadog.globalTag }}
+          - "--tracing.datadog.globalTag={{ .Values.tracing.datadog.globalTag }}"
+          {{- end }}
+          {{- if .Values.tracing.datadog.prioritySampling }}
+          - "--tracing.datadog.prioritySampling=true"
+          {{- end }}
+          {{- end }}
+          {{- if .Values.tracing.jaeger }}
+          - "--tracing.jaeger=true"
+          {{- if .Values.tracing.jaeger.samplingServerURL }}
+          - "--tracing.jaeger.samplingServerURL={{ .Values.tracing.jaeger.samplingServerURL }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.samplingType }}
+          - "--tracing.jaeger.samplingType={{ .Values.tracing.jaeger.samplingType }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.samplingParam }}
+          - "--tracing.jaeger.samplingParam={{ .Values.tracing.jaeger.samplingParam }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.localAgentHostPort }}
+          - "--tracing.jaeger.localAgentHostPort={{ .Values.tracing.jaeger.localAgentHostPort }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.gen128Bit }}
+          - "--tracing.jaeger.gen128Bit={{ .Values.tracing.jaeger.gen128Bit }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.propagation }}
+          - "--tracing.jaeger.propagation={{ .Values.tracing.jaeger.propagation }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.traceContextHeaderName }}
+          - "--tracing.jaeger.traceContextHeaderName={{ .Values.tracing.jaeger.traceContextHeaderName }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.disableAttemptReconnecting }}
+          - "--tracing.jaeger.disableAttemptReconnecting={{ .Values.tracing.jaeger.disableAttemptReconnecting }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.collector }}
+          {{- if .Values.tracing.jaeger.collector.endpoint }}
+          - "--tracing.jaeger.collector.endpoint={{ .Values.tracing.jaeger.collector.endpoint }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.collector.user }}
+          - "--tracing.jaeger.collector.user={{ .Values.tracing.jaeger.collector.user }}"
+          {{- end }}
+          {{- if .Values.tracing.jaeger.collector.password }}
+          - "--tracing.jaeger.collector.password={{ .Values.tracing.jaeger.collector.password }}"
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.tracing.zipkin }}
+          - "--tracing.zipkin=true"
+          {{- if .Values.tracing.zipkin.httpEndpoint }}
+          - "--tracing.zipkin.httpEndpoint={{ .Values.tracing.zipkin.httpEndpoint }}"
+          {{- end }}
+          {{- if .Values.tracing.zipkin.sameSpan }}
+          - "--tracing.zipkin.sameSpan={{ .Values.tracing.zipkin.sameSpan }}"
+          {{- end }}
+          {{- if .Values.tracing.zipkin.id128Bit }}
+          - "--tracing.zipkin.id128Bit={{ .Values.tracing.zipkin.id128Bit }}"
+          {{- end }}
+          {{- if .Values.tracing.zipkin.sampleRate }}
+          - "--tracing.zipkin.sampleRate={{ .Values.tracing.zipkin.sampleRate }}"
+          {{- end }}
+          {{- end }}
+          {{- if .Values.tracing.haystack }}
+          - "--tracing.haystack=true"
+          {{- if .Values.tracing.haystack.localAgentHost }}
+          - "--tracing.haystack.localAgentHost={{ .Values.tracing.haystack.localAgentHost }}"
+          {{- end }}
+          {{- if .Values.tracing.haystack.localAgentPort }}
+          - "--tracing.haystack.localAgentPort={{ .Values.tracing.haystack.localAgentPort }}"
+          {{- end }}
+          {{- if .Values.tracing.haystack.globalTag }}
+          - "--tracing.haystack.globalTag={{ .Values.tracing.haystack.globalTag }}"
+          {{- end }}
+          {{- if .Values.tracing.haystack.traceIDHeaderName }}
+          - "--tracing.haystack.traceIDHeaderName={{ .Values.tracing.haystack.traceIDHeaderName }}"
+          {{- end }}
+          {{- if .Values.tracing.haystack.parentIDHeaderName }}
+          - "--tracing.haystack.parentIDHeaderName={{ .Values.tracing.haystack.parentIDHeaderName }}"
+          {{- end }}
+          {{- if .Values.tracing.haystack.spanIDHeaderName }}
+          - "--tracing.haystack.spanIDHeaderName={{ .Values.tracing.haystack.spanIDHeaderName }}"
+          {{- end }}
+          {{- if .Values.tracing.haystack.baggagePrefixHeaderName }}
+          - "--tracing.haystack.baggagePrefixHeaderName={{ .Values.tracing.haystack.baggagePrefixHeaderName }}"
+          {{- end }}
+          {{- end }}
+          {{- if .Values.tracing.elastic }}
+          - "--tracing.elastic=true"
+          {{- if .Values.tracing.elastic.serverURL }}
+          - "--tracing.elastic.serverURL={{ .Values.tracing.elastic.serverURL }}"
+          {{- end }}
+          {{- if .Values.tracing.elastic.secretToken }}
+          - "--tracing.elastic.secretToken={{ .Values.tracing.elastic.secretToken }}"
+          {{- end }}
+          {{- if .Values.tracing.elastic.serviceEnvironment }}
+          - "--tracing.elastic.serviceEnvironment={{ .Values.tracing.elastic.serviceEnvironment }}"
+          {{- end }}
           {{- end }}
           {{- end }}
           {{- if .Values.providers.kubernetesCRD.enabled }}
@@ -153,17 +275,26 @@
           {{- if .Values.providers.kubernetesCRD.allowExternalNameServices }}
           - "--providers.kubernetescrd.allowExternalNameServices=true"
           {{- end }}
+          {{- if .Values.providers.kubernetesCRD.allowEmptyServices }}
+          - "--providers.kubernetescrd.allowEmptyServices=true"
+          {{- end }}
           {{- end }}
           {{- if .Values.providers.kubernetesIngress.enabled }}
           - "--providers.kubernetesingress"
           {{- if .Values.providers.kubernetesIngress.allowExternalNameServices }}
           - "--providers.kubernetesingress.allowExternalNameServices=true"
           {{- end }}
+          {{- if .Values.providers.kubernetesIngress.allowEmptyServices }}
+          - "--providers.kubernetesingress.allowEmptyServices=true"
+          {{- end }}
           {{- if and .Values.service.enabled .Values.providers.kubernetesIngress.publishedService.enabled }}
           - "--providers.kubernetesingress.ingressendpoint.publishedservice={{ template "providers.kubernetesIngress.publishedServicePath" . }}"
           {{- end }}
           {{- if .Values.providers.kubernetesIngress.labelSelector }}
           - "--providers.kubernetesingress.labelSelector={{ .Values.providers.kubernetesIngress.labelSelector }}"
+          {{- end }}
+          {{- if .Values.providers.kubernetesIngress.ingressClass }}
+          - "--providers.kubernetesingress.ingressClass={{ .Values.providers.kubernetesIngress.ingressClass }}"
           {{- end }}
           {{- end }}
           {{- if .Values.experimental.kubernetesGateway.enabled }}
@@ -186,6 +317,9 @@
           {{- $toPort := index $.Values.ports $config.redirectTo }}
           - "--entrypoints.{{ $entrypoint }}.http.redirections.entryPoint.to=:{{ $toPort.exposedPort }}"
           - "--entrypoints.{{ $entrypoint }}.http.redirections.entryPoint.scheme=https"
+          {{- end }}
+          {{- if $config.middlewares }}
+          - "--entrypoints.{{ $entrypoint }}.http.middlewares={{ join "," $config.middlewares }}"
           {{- end }}
           {{- if $config.tls }}
           {{- if $config.tls.enabled }}
@@ -258,6 +392,17 @@
           {{- if hasKey .Values.pilot "dashboard" }}
           - "--pilot.dashboard={{ .Values.pilot.dashboard }}"
           {{- end }}
+          {{- range $resolver, $config := $.Values.certResolvers }}
+          {{- range $option, $setting := $config }}
+          {{- if kindIs "map" $setting }}
+          {{- range $field, $value := $setting }}
+          - "--certificatesresolvers.{{ $resolver }}.acme.{{ $option }}.{{ $field }}={{ if kindIs "slice" $value }}{{ join "," $value }}{{ else }}{{ $value }}{{ end }}"
+          {{- end }}
+          {{- else }}
+          - "--certificatesresolvers.{{ $resolver }}.acme.{{ $option }}={{ $setting }}"
+          {{- end }}
+          {{- end }}
+          {{- end }}
           {{- with .Values.additionalArguments }}
           {{- range . }}
           - {{ . | quote }}
@@ -302,9 +447,9 @@
         - name: plugins
           emptyDir: {}
         {{- end }}
-      {{- with .Values.affinity }}
+      {{- if .Values.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
+        {{- tpl (toYaml .Values.affinity) . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:

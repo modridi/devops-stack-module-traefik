@@ -3,19 +3,19 @@ locals {
     traefik = {
       ressources = {
         limits = {
-          cpu = "250m"
+          cpu    = "250m"
           memory = "512Mi"
         }
         requests = {
-          cpu = "125m"
+          cpu    = "125m"
           memory = "256Mi"
         }
       }
       middlewares = {
         redirections = {
           withclustername = {
-            permanent = false
-            regex = "apps.${var.base_domain}"
+            permanent   = false
+            regex       = "apps.${var.base_domain}"
             replacement = "apps.${var.cluster_name}.${var.base_domain}"
           }
         }
