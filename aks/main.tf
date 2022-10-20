@@ -7,6 +7,7 @@ data "azurerm_resource_group" "this" {
   name = var.resource_group_name
 }
 
+# TODO should we move this out of here?
 resource "azurerm_dns_cname_record" "wildcard" {
   name                = "*.apps.${var.cluster_name}"
   zone_name           = data.azurerm_dns_zone.this.name
