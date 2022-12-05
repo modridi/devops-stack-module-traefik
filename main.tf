@@ -51,7 +51,7 @@ resource "argocd_application" "this" {
     project = argocd_project.this.metadata.0.name
 
     source {
-      repo_url        = "https://github.com/camptocamp/devops-stack-module-traefik.git"
+      repo_url        = "https://github.com/cryptobioz/devops-stack-module-traefik.git"
       path            = "charts/traefik"
       target_revision = "main"
       helm {
