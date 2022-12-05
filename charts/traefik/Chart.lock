@@ -1,6 +1,0 @@
-dependencies:
-- name: traefik
-  repository: https://helm.traefik.io/traefik
-  version: 15.0.0
-digest: sha256:9cc88f8e28e547c3cf7fd639f2e577a5be0ceccb7d0608b41b2e38b93a9c8372
-generated: "2022-10-13T17:52:40.352604503+02:00"
