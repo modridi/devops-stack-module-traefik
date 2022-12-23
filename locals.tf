@@ -22,4 +22,6 @@ locals {
       }
     }
   }]
+
+  value = "value"
 }
